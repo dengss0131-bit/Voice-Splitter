@@ -281,6 +281,11 @@ function App() {
         <div className="panelTitle"><Download size={18} /> 最终导出</div>
         {!result && <p className="hint">点击“自动优化并生成音频”后，会直接生成 edited_voice.wav。</p>}
         {result && <div className="exportBox">
+          <div className="previewPlayer">
+            <strong>在线试听优化后的音频</strong>
+            <audio controls src={`${API}${result.download_url}`}></audio>
+            <span>满意后再点击下方按钮自主下载。</span>
+          </div>
           <a className="downloadBtn" href={`${API}${result.download_url}`} target="_blank">下载 edited_voice.wav</a>
           <a className="downloadBtn" href={`${API}${result.download_base}/pause_plan.json`} target="_blank">下载 pause_plan.json</a>
           <div className="outputPath">{result.output_dir}</div>
