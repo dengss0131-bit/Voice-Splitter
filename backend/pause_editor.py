@@ -11,7 +11,7 @@ class PauseSettings:
     style: str = "natural"
 
 STYLE_TARGETS = {
-    "short": {"micro": 0.18, "phrase": 0.35, "sentence": 0.55, "paragraph": 0.85},
+    "short": {"micro": 0.22, "phrase": 0.38, "sentence": 0.62, "paragraph": 0.9},
     "natural": {"micro": 0.25, "phrase": 0.55, "sentence": 0.9, "paragraph": 1.3},
     "slow": {"micro": 0.35, "phrase": 0.8, "sentence": 1.25, "paragraph": 1.8},
 }
@@ -41,7 +41,7 @@ def detect_pauses(input_path: str, settings: PauseSettings) -> list[dict]:
                 after = line.split("silence_end:", 1)[1]
                 end = float(after.split("|", 1)[0].strip())
                 original = max(0, end - current)
-                kind = classify_pause(original)
+                kind = classify_pause(original, settings.style)
                 suggested = suggest_duration(original, kind, settings.style)
                 pauses.append({
                     "id": len(pauses) + 1,
@@ -58,7 +58,15 @@ def detect_pauses(input_path: str, settings: PauseSettings) -> list[dict]:
             current = None
     return pauses
 
-def classify_pause(duration: float) -> str:
+def classify_pause(duration: float, style: str = "natural") -> str:
+    if style == "short":
+        if duration < 0.22:
+            return "微停顿"
+        if duration < 0.48:
+            return "短语停顿"
+        if duration < 0.9:
+            return "句尾停顿"
+        return "段落停顿"
     if duration < 0.28:
         return "微停顿"
     if duration < 0.6:
@@ -71,6 +79,12 @@ def suggest_duration(original: float, kind: str, style: str) -> float:
     key = {"微停顿": "micro", "短语停顿": "phrase", "句尾停顿": "sentence", "段落停顿": "paragraph"}[kind]
     targets = STYLE_TARGETS.get(style, STYLE_TARGETS["natural"])
     target = targets[key]
+    if style == "short":
+        if kind == "微停顿":
+            target = max(original, target)
+        else:
+            target = max(original, target)
+        return max(0.1, min(target, 1.2))
     if kind == "微停顿" and style != "slow":
         target = min(target, max(original, 0.16))
     return max(0.08, min(target, 3.0))
@@ -78,7 +92,29 @@ def suggest_duration(original: float, kind: str, style: str) -> float:
 def analyze_pauses(input_path: str, settings: PauseSettings) -> dict:
     duration = get_duration(input_path)
     pauses = detect_pauses(input_path, settings)
+    if settings.style == "short":
+        pauses = refine_short_video_pauses(pauses)
     return {"duration": round(duration, 3), "pauses": pauses, "style": settings.style}
+
+def refine_short_video_pauses(pauses: list[dict]) -> list[dict]:
+    if not pauses:
+        return pauses
+    refined = []
+    for pause in pauses:
+        if refined and pause["start"] - refined[-1]["end"] < 0.18:
+            prev = refined[-1]
+            merged_original = pause["end"] - prev["start"]
+            prev["end"] = pause["end"]
+            prev["position"] = round((prev["start"] + prev["end"]) / 2, 3)
+            prev["original_duration"] = round(merged_original, 3)
+            prev["kind"] = classify_pause(merged_original, "short")
+            prev["target_duration"] = round(suggest_duration(merged_original, prev["kind"], "short"), 3)
+            prev["action"] = "加长" if prev["target_duration"] > prev["original_duration"] + 0.03 else "保留"
+        else:
+            refined.append(dict(pause))
+    for index, pause in enumerate(refined, start=1):
+        pause["id"] = index
+    return refined
 
 def render_with_pauses(input_path: str, output_dir: str, pauses: list[dict]) -> dict:
     output = Path(output_dir)

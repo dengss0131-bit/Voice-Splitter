@@ -8,7 +8,7 @@ import './styles.css'
 const API = 'http://127.0.0.1:8000'
 
 const styles = {
-  short: { name: '短视频紧凑', silenceMs: 140, silenceDb: -36, note: '先自动加长短停顿，但整体仍偏紧凑' },
+  short: { name: '短视频紧凑', silenceMs: 90, silenceDb: -40, note: '更敏感识别短停顿，补出短视频口播的利落节奏' },
   natural: { name: '自然口播', silenceMs: 180, silenceDb: -35, note: '先自动把过短停顿补到自然口播节奏' },
   slow: { name: '慢速旁白', silenceMs: 180, silenceDb: -35, note: '先自动明显加长句尾和段落停顿，更像旁白' }
 }
