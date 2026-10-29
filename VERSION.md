@@ -1,12 +1,12 @@
-# v2.2 优化短视频紧凑模式
+# v2.3 智能一键启动
 
-此版本在 v2.1 基础上优化短视频紧凑模式：
+此版本在 v2.2 基础上升级 Windows 一键启动脚本：
 
-- 前端短视频紧凑检测参数改为 90ms / -40dB，更容易识别短停顿
-- 后端 short 模式增加单独的停顿分类逻辑
-- 微停顿建议补到 0.22s
-- 短语停顿建议补到 0.38s
-- 句尾停顿建议补到 0.62s
-- 增加相邻短停顿合并逻辑，避免节奏过碎
+- 自动检查 Node.js / npm
+- 自动检查 Python 或 py launcher
+- 自动检查 ffmpeg / ffprobe
+- 如果缺少 node_modules，自动执行 npm install
+- 如果缺少 Python 后端依赖，自动执行 pip install -r backend/requirements.txt
+- 检查通过后自动启动后端和前端，并打开 http://127.0.0.1:5173/
 
-慢速旁白策略保持不变。
+如果缺少 Node.js、Python 或 ffmpeg，会在窗口中给出明确提示，不再静默失败。
