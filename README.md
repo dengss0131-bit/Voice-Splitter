@@ -1,6 +1,9 @@
 # 口播停顿重塑器
 
 一个本地运行的口播音频工具：上传完整配音音频后，自动识别停顿位置，自动加长过短停顿，生成一条新的完整音频 `edited_voice.wav`。同时保留复审区，可以批量或逐个微调停顿时间后重新导出。
+<img width="1419" height="1284" alt="image" src="https://github.com/user-attachments/assets/53fd6c3a-501a-4e88-b808-3009315be173" />
+
+
 
 ## 功能
 
